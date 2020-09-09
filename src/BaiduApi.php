@@ -41,17 +41,18 @@ class BaiduApi {
 	 */
 	protected $runtime_path;
 
-	function __construct ($appid, $api_key, $api_secret, $runtime_path) {
+	function __construct ($appid, $api_key, $api_secret, $runtime_path='') {
 		$this->appid      = $appid;
 		$this->api_key    = $api_key;
 		$this->api_secret = $api_secret;
 
+		$runtime_path = $runtime_path ? $runtime_path : root_path();
 		$this->runtime_path = $runtime_path . 'runtime/villain/';
 
 		Cache::init($this->runtime_path . 'simplecache/');
 	}
 
-	private function getAccessToken () {
+	public function getAccessToken () {
 		$appid  = $this->api_key;
 		$secret = $this->api_secret;
 
@@ -84,6 +85,88 @@ class BaiduApi {
 		Cache::set($appid.'_time', $data['expires_in']+time(),  $data['expires_in']);
 		return $data['access_token'];
 	}
+
+	/**
+	 * 文章标签接口
+	 * @param string $title
+	 * @param string $content
+	 * @return bool|mixed
+	 */
+	public function getNplKeyword ($title = '', $content = '') {
+		$access_token = $this->getAccessToken();
+
+		$url = "https://aip.baidubce.com/rpc/2.0/nlp/v1/keyword?charset=UTF-8&access_token=" . $access_token;
+
+		$data['title'] = $title;
+		$data['content'] = $content;
+
+		$json = $this->http($url, json_encode($data, 320), "POST", ["Content-type: application/json"]);
+
+		$return = json_decode($json, true);
+
+		if (isset($return['error_code']) && $return['error_code']) {
+			$this->logs($return['error_msg']);
+			return false;
+		}
+
+		return $return['items'];
+	}
+
+	/**
+	 * 文章分类接口
+	 * @param string $title
+	 * @param string $content
+	 * @return bool|mixed
+	 */
+	public function getNplTopic ($title = '', $content = '') {
+		$access_token = $this->getAccessToken();
+
+		$url = "https://aip.baidubce.com/rpc/2.0/nlp/v1/topic?charset=UTF-8&access_token=" . $access_token;
+
+		$data['title'] = $title;
+		$data['content'] = $content;
+
+		$json = $this->http($url, json_encode($data, 320), "POST", ["Content-type: application/json"]);
+
+		$return = json_decode($json, true);
+
+		if (isset($return['error_code']) && $return['error_code']) {
+			$this->logs($return['error_msg']);
+			return false;
+		}
+
+		return $return['item'];
+	}
+
+	/**
+	 * 文章摘要
+	 * @param string $title
+	 * @param string $content
+	 * @param int    $max_summary_len
+	 * @return bool|mixed
+	 */
+	public function getNplNewsSummary ($title = '', $content = '', $max_summary_len = 300) {
+		$access_token = $this->getAccessToken();
+
+		$url = "https://aip.baidubce.com/rpc/2.0/nlp/v1/news_summary?charset=UTF-8&access_token=" . $access_token;
+
+		$data['title'] = $title;
+		$data['content'] = $content;
+		$data['max_summary_len'] = $max_summary_len;
+
+		$json = $this->http($url, json_encode($data, 320), "POST", ["Content-type: application/json"]);
+
+		$return = json_decode($json, true);
+
+		if (isset($return['error_code']) && $return['error_code']) {
+			$this->logs($return['error_msg']);
+			return false;
+		}
+
+		return $return['summary'];
+	}
+
+
 
 	/**
 	 * [logs 日志]
