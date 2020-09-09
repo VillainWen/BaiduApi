@@ -1,0 +1,27 @@
+{
+    "name": "villain/baidu-api",
+    "description": "百度人工智能API",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "VillainWen",
+            "email": "1779479582@qq.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "villain\\baiduapi\\": "src"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "require": {
+        "ext-json": "*",
+        "baidu/aip-sdk": "^2.2",
+        "topthink/framework": "^6.0",
+        "topthink/think-helper": "^3.0.4"
+    }
+}
