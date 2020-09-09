@@ -17,6 +17,7 @@
     },
     "require": {
         "ext-json": "*",
-        "baidu/aip-sdk": "^2.2"
+        "baidu/aip-sdk": "^2.2",
+        "ext-curl": "*"
     }
 }

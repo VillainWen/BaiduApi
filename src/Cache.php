@@ -13,7 +13,7 @@
  */
 
 
-namespace villain\BaiduApi;
+namespace villain\baiduapi;
 
 
 class Cache {

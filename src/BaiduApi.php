@@ -11,10 +11,10 @@
  * Copyright (c) 2020 All rights reserved.
  * ------------------------------------------------------------------------
  */
-namespace villain\BaiduApi;
+namespace villain\baiduapi;
 
-use villain\BaiduApi\Cache;
-use villain\BaiduApi\Logs;
+use villain\baiduapi\Cache;
+use villain\baiduapi\Logs;
 
 class BaiduApi {
 	/**
@@ -51,7 +51,7 @@ class BaiduApi {
 		Cache::init($this->runtime_path . 'simplecache/');
 	}
 
-	public function getAccessToken () {
+	private function getAccessToken () {
 		$appid  = $this->api_key;
 		$secret = $this->api_secret;
 
@@ -61,16 +61,28 @@ class BaiduApi {
 		}
 
 		$token = Cache::get($appid . '_token');
+		$time  = Cache::get($appid . '_time');
 
-		if($token){
-			return $token;
+		if ($time > time() + 60*60*24*29) {
+			if($token){
+				return $token;
+			}
 		}
 
 		$url = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' . $this->api_key . '&client_secret=' . $this->api_secret;
 
-		$data = $this->http($url, '', "POST");
+		$json = $this->http($url, '', "POST");
 
-		var_dump($data);exit;
+		$data = json_decode($json, true);
+
+		if (isset($data['error']) && $data['error']) {
+			$this->logs($data['error_description']);
+			return false;
+		}
+
+		Cache::set($appid.'_token', $data['access_token'], $data['expires_in']);
+		Cache::set($appid.'_time', $data['expires_in']+time(),  $data['expires_in']);
+		return $data['access_token'];
 	}
 
 	/**
@@ -83,6 +95,13 @@ class BaiduApi {
 		$Logs->logs($content, $this->runtime_path);
 	}
 
+	/**
+	 * 请求HTTP数据
+	 * @param  [type] $url     完整URL地址
+	 * @param  string $params GET、POST参数
+	 * @param  string $method 提交方式GET、POST
+	 * @param  array $header Header参数
+	 */
 	protected function http($url, $params = '', $method = 'GET', $header = array(), $agent = array()) {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
